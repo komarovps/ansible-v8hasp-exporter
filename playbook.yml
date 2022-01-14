@@ -1,0 +1,44 @@
+---
+- name: deploy v8hasp-exporter
+  hosts: hasplmservers
+  vars:
+    osweb_path: C:\osweb
+    exporter_path: C:\HASPLM\v8hasp-exporter
+
+  tasks:
+    - name: install add packages
+      win_chocolatey:
+        name:
+        - onescript
+        - git
+        - wget
+        state: present
+
+    - name: download onescript.web
+      win_get_url:
+        url: https://build.oscript.io/job/1Script.Web/job/develop/lastSuccessfulBuild/artifact/oscript.web-win-x64.zip
+        dest: '%TEMP%\oscript.web-win-x64.zip'
+
+    - name: unzip oscript.web archive
+      win_unzip:
+        src: '%TEMP%\oscript.web-win-x64.zip'
+        dest: '{{ osweb_path }}'
+
+    - name: git clone v8hasp-exporter
+      win_git:
+        repo: 'https://github.com/komarovps/v8hasp-exporter.git'
+        dest: '{{ exporter_path }}'
+        branch: main
+        clone: true
+
+    - name: install oscript libraries
+      win_shell: opm install -l
+      args:
+        chdir: '{{ exporter_path }}\src'
+        executable: cmd.exe
+
+    - name: reg service
+      win_service:
+        name: HASP exporter for Prometheus
+        path: '{{ osweb_path }}\OneScript.WebHost.exe --RunAsService=true --urls=http://*:5000 --ContentRoot={{ exporter_path }}\src'
+        state: started
