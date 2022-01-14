@@ -1,5 +1,5 @@
 # ansible-v8hasp-exporter
-v8hasp-exporter ansible playbook
+[v8hasp-exporter](https://github.com/komarovps/v8hasp-exporter) ansible playbook
 
 ## Требования
 * Модуль [win_git](https://github.com/Lagyu/ansible-win_git) для Ansible
